@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd">
+
+	<!-- Persistence: database, JDBC, transactions, DAO implementations -->
+
+	<beans profile="local">
+		<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+			destroy-method="close">
+			<property name="url" value="jdbc:h2:mem:test" />
+			<property name="driverClassName" value="org.h2.Driver" />
+			<property name="initialSize" value="4" />
+			<property name="maxActive" value="40" />
+			<property name="defaultAutoCommit" value="false" />
+		</bean>
+		<jdbc:embedded-database id="dataSource" type="H2">
+			<jdbc:script location="classpath*:META-INF/sql/schema.sql" />
+			<jdbc:script location="classpath*:META-INF/sql/student_data.sql" />
+		</jdbc:embedded-database>
+		<bean id="rewriteDao" class="com.ngs.rewrite.infrastructure.persistence.jdbc.JdbcRewriteDao">
+			<property name="dataSource" ref="dataSource" />
+		</bean>
+	</beans>
+	
+	<beans profile="dev, prod">
+		<bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+			<property name="jndiName" value="jdbc/ngsmedicare/ngsnav"/>
+		</bean>
+		<bean id="rewriteDao" class="com.ngs.rewrite.infrastructure.persistence.jdbc.JdbcRewriteDao">
+			<property name="dataSource" ref="dataSource" />
+		</bean>
+	</beans>
+
+</beans>
